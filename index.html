@@ -19,6 +19,12 @@
             font-family: 'Nunito', sans-serif;
             touch-action: none;
             /* Khóa thao tác browser mặc định để kéo vuốt cực mượt */
+            /* CẤP ĐỘ CHUYÊN GIA UI/UX: Chặn triệt để bôi đen và menu lưu ảnh trên Mobile Safari/Chrome */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         /* Lớp Container để thực hiện việc kéo vuốt (pan) không gian */
@@ -51,7 +57,9 @@
             display: block;
             width: 100%;
             height: 100%;
-            /* Bỏ tính năng max-height/max-width chứa viền đen để thay thế bằng thuật toán Full Cover ở JS */
+            /* Ngăn chặn hành vi Giữ-Ngón-Tay hiển thị Context Menu Save Image của điện thoại */
+            pointer-events: none;
+            -webkit-user-drag: none;
         }
 
         /* Hotspot Core Styles */
@@ -517,14 +525,23 @@
             let lastTouchTime = 0; // Đánh dấu thời gian chạm cuối để tách biệt chuột
 
             // Tham số cho tính năng trượt ngón tay trên điện thoại
-            const SWIPE_MULTIPLIER = 1.5; // Giảm hệ số khuếch đại xuống để có cảm giác thật tay hơn 
+            const SWIPE_MULTIPLIER = 0.75; // Giảm tốc độ bám vuốt còn 1/2 để ảnh không bị chạy quá nhanh
             let velocityX = 0;
             let velocityY = 0;
             let lastMoveTime = 0;
             let velocityHistory = []; // Lưu trữ lịch sử vận tốc để trung bình hóa, chống giật khuy (Advanced Easing)
 
+            let glideStartTime = 0; // Đánh dấu mốc bắt đầu Quán Tính Trôi (Momentum)
+
             function startDrag(clientX, clientY) {
                 if (overlay.classList.contains('show')) return; // Khóa kéo khi đang hiện thông tin
+
+                // CƠ CHẾ BẢO VỆ UX CHUYÊN SÂU: Nếu ảnh đang trong đà trôi siêu tốc (0.5s từ lúc buông tay),
+                // các thao tác chạm vô ý sẽ bị vô hiệu hóa để không gây ra tình trạng giật cục đứng khựng lại.
+                if (Date.now() - glideStartTime < 500) {
+                    return;
+                }
+
                 isDragging = true;
                 hasDragged = false;
                 panContainer.classList.add('is-dragging');
@@ -603,10 +620,10 @@
 
                 // Thực thi Quán Tính (Momentum) mượt mà cao cấp
                 if (hasDragged && (Math.abs(velocityX) > 0.05 || Math.abs(velocityY) > 0.05)) {
-                    // Gia tốc tăng vọt lên 800ms để kết hợp hoàn hảo cùng file CSS gốc (cubic-bezier 1.2s)
+                    // Tăng thêm gia tốc dạt (1800ms) để bù trừ cho tốc độ vuốt đã bị cắt đi một nửa
                     // CSS sẽ đảm nhiệm làm đường cong giảm tốc y hệt như bánh xe ma sát mặt băng
-                    let targetX = panX + (velocityX * 800);
-                    let targetY = panY + (velocityY * 800);
+                    let targetX = panX + (velocityX * 1800);
+                    let targetY = panY + (velocityY * 1800);
 
                     const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
                     const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
@@ -618,6 +635,9 @@
                     panX = targetX;
                     panY = targetY;
                     updatePan();
+
+                    // Neo chuẩn thời gian bắt đầu trôi để kích hoạt "Cơ chế bảo vệ 0.5s"
+                    glideStartTime = Date.now();
                 }
             }
 
