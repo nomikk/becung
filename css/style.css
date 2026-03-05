@@ -1,0 +1,342 @@
+/* Base Variables - Soft Pastel & Yellow Tones */
+:root {
+    --bg-pink: #fce4ec;
+    --accent-yellow: #fdd835;
+    --text-primary: #5d4037;
+    --text-secondary: #8d6e63;
+    --glass-bg: rgba(255, 248, 225, 0.85);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.6);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body,
+html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Nunito', sans-serif;
+    color: var(--text-primary);
+    background-color: #1a1a1a;
+}
+
+/* Wrapper */
+#wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    perspective: 1200px;
+    /* Góc nhìn 3D */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#parallax-container {
+    position: absolute;
+    left: -12.5vw;
+    top: -10vh;
+    width: 125vw;
+    height: 120vh;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* Background Parallax Layer */
+#background-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('../store.jpeg') center/cover no-repeat;
+    z-index: 1;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+/* Soft Vignette Overlay */
+#overlay-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0.5) 100%);
+    z-index: 2;
+    pointer-events: none;
+    transition: opacity 1s ease;
+}
+
+/* UI Layers */
+.ui-layer {
+    position: absolute;
+    z-index: 10;
+    width: 100%;
+    pointer-events: none;
+}
+
+/* Header */
+header {
+    top: 40px;
+    left: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-right: 40px;
+}
+
+.logo-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-name {
+    font-family: 'Pacifico', cursive;
+    font-size: 3rem;
+    color: var(--accent-yellow);
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    margin-bottom: -5px;
+}
+
+.brand-tagline {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Fixed Footer */
+footer {
+    bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 40px;
+    pointer-events: auto;
+}
+
+.footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.contact p {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.contact i {
+    color: var(--accent-yellow);
+}
+
+.socials {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-social {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.3rem;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.btn-social:hover {
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    transform: translateY(-5px) scale(1.1);
+}
+
+.style-zalo b {
+    font-family: sans-serif;
+    font-weight: 900;
+}
+
+.footer-right {
+    text-align: right;
+}
+
+.license {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* ===== Interactive Scene ===== */
+#scene-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    pointer-events: auto;
+    transform-style: preserve-3d;
+}
+
+.hotspot {
+    position: absolute;
+    will-change: transform, opacity;
+    transition: opacity 0.5s ease;
+    transform: translate(-50%, -50%);
+}
+
+.hotspot-trigger {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+/* Bắt chuột vừa đủ để click */
+.hotspot-trigger::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.spot-marker {
+    width: 16px;
+    height: 16px;
+    background: #00e5ff;
+    border-radius: 50%;
+    box-shadow: 0 0 12px 6px rgba(0, 229, 255, 0.7);
+    position: relative;
+    z-index: 3;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+    border: 2px solid #fff;
+    pointer-events: none;
+}
+
+.pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: transparent;
+    border: 3px solid rgba(0, 229, 255, 0.9);
+    box-shadow: 0 0 15px 4px rgba(0, 229, 255, 0.5);
+    animation: slow-wave-pulse 1.5s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes slow-wave-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(4);
+        opacity: 0;
+    }
+}
+
+/* Card */
+.hotspot-card {
+    position: absolute;
+    top: 50%;
+    left: 70px;
+    transform: translateY(-50%) translate(-15px, 0);
+    width: 260px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: var(--glass-shadow);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: auto;
+    /* Cho phép tương tác khi đã hiển thị */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 4;
+}
+
+/* Cầu nối tàng hình để chuột không bị rớt khoảng trống giữa marker và card */
+.hotspot-card::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    bottom: -40px;
+    left: -100px;
+    width: 100px;
+}
+
+.hotspot-card.left-card {
+    left: auto;
+    right: 70px;
+    transform: translateY(-50%) translate(15px, 0);
+}
+
+.hotspot-card.left-card::before {
+    left: auto;
+    right: -100px;
+}
+
+/* Show card when 'active' class is added via JS */
+.hotspot.active .spot-marker {
+    transform: scale(1.3);
+    background: #fff;
+    box-shadow: 0 0 15px 5px rgba(0, 229, 255, 0.8);
+    border-color: #00e5ff;
+}
+
+.hotspot.active .hotspot-card {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translate(0, 0);
+}
+
+.hotspot-card h3 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: #00bcd4;
+    /* Accent color matching cyan */
+    margin-bottom: 5px;
+}
+
+.hotspot-card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    font-weight: 600;
+}
