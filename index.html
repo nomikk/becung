@@ -141,6 +141,8 @@
             height: 100vh;
             z-index: 100;
             display: flex;
+            flex-direction: column;
+            /* Xếp dọc bảng thông tin và nút trở về */
             justify-content: center;
             align-items: center;
             opacity: 0;
@@ -169,31 +171,68 @@
             z-index: 1;
         }
 
-        .close-btn {
+        /* --- LOGO STORE NỔI TRÊN ẢNH --- */
+        .store-logo {
             position: absolute;
-            top: 30px;
-            right: 40px;
+            top: 6%;
+            /* Canh vị trí hàng đèn ở trên cùng */
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FFD700;
+            /* Vàng óng */
+            font-size: 4.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 215, 0, 0.7);
+            /* Đổ bóng nổi bật */
+            letter-spacing: 5px;
+            z-index: 5;
+            pointer-events: none;
+            /* Không cản trở việc vuốt kéo ảnh */
+            width: 100%;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .close-btn {
+            position: relative;
+            /* Gỡ bỏ position absolute để trôi xuống dưới bảng */
             z-index: 4;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 102, 153, 0.9);
+            /* Tone hồng tương đồng bảng thông tin */
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 12px 24px;
-            border-radius: 30px;
+            border: 2px dashed rgba(255, 255, 255, 0.8);
+            padding: 14px 30px;
+            border-radius: 40px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1.1rem;
             font-weight: 800;
             font-family: inherit;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
+            margin-top: 25px;
+            /* Khoảng cách hở giữa bảng thông tin và nút đóng */
+            box-shadow: 0 10px 25px rgba(255, 102, 153, 0.4);
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        /* Hiệu ứng nảy lên cho nút đóng đồng bộ với bảng thông tin */
+        .detail-overlay.show .close-btn {
+            transform: translateY(0);
+            opacity: 1;
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s, opacity 0.5s ease 0.3s;
         }
 
         .close-btn:hover {
-            background: white;
-            color: #111;
+            background: #ff3377;
+            color: #ffffff;
             transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 51, 119, 0.5);
         }
 
         /* Bảng nội dung thông tin thiết kế nhẹ nhàng, tone hồng */
@@ -348,6 +387,9 @@
         <div class="image-wrapper" id="zoom-wrapper">
             <img src="store.jpeg" alt="Background Store">
 
+            <!-- Logo tiệm chèn trực tiếp vào giữa không gian thực của ảnh -->
+            <div class="store-logo">Bé Cưng</div>
+
             <!-- Các điểm đỏ được gán cứng theo % của tấm ảnh gốc -->
             <!-- Object 1 đã được dịch chuyển lên 3 lần đường kính (3x40=120px) và qua phải 1.5 lần (1.5x40=60px) -->
             <div class="hotspot" style="top: calc(67% - 120px); left: calc(4.5% + 60px);"
@@ -404,11 +446,13 @@
     <!-- Container Overlay Bọc Lên Mọi Thứ Khi Đã Zoom -->
     <div id="detail-overlay" class="detail-overlay">
         <div class="detail-bg" id="detail-bg"></div>
-        <button class="close-btn" id="close-btn"><i class="fa-solid fa-arrow-left"></i> Trở về Cửa Hàng</button>
+
         <div class="detail-content">
             <h2 id="detail-title">Tên Object</h2>
             <p id="detail-info">Thông tin chi tiết về sản phẩm này sẽ được hiển thị ở đây...</p>
         </div>
+
+        <button class="close-btn" id="close-btn"><i class="fa-solid fa-arrow-left"></i> Trở về Cửa Hàng</button>
     </div>
 
     <!-- Nút Mạng Xã Hội Trôi Nổi (Floating) -->
@@ -473,10 +517,11 @@
             let lastTouchTime = 0; // Đánh dấu thời gian chạm cuối để tách biệt chuột
 
             // Tham số cho tính năng trượt ngón tay trên điện thoại
-            const SWIPE_MULTIPLIER = 2.2; // Khuếch đại khoảng cách vuốt lên 2.2 lần
+            const SWIPE_MULTIPLIER = 1.5; // Giảm hệ số khuếch đại xuống để có cảm giác thật tay hơn 
             let velocityX = 0;
             let velocityY = 0;
             let lastMoveTime = 0;
+            let velocityHistory = []; // Lưu trữ lịch sử vận tốc để trung bình hóa, chống giật khuy (Advanced Easing)
 
             function startDrag(clientX, clientY) {
                 if (overlay.classList.contains('show')) return; // Khóa kéo khi đang hiện thông tin
@@ -491,6 +536,7 @@
                 lastMoveTime = Date.now();
                 velocityX = 0;
                 velocityY = 0;
+                velocityHistory = [];
             }
 
             function onDrag(clientX, clientY) {
@@ -501,19 +547,26 @@
                     hasDragged = true;
                 }
 
-                // Tính gia tốc (delta) với hệ số nhân để đỡ mỏi tay
+                // Tính gia tốc (delta) với hệ số nhân giảm bớt
                 const deltaX = (clientX - lastClientX) * SWIPE_MULTIPLIER;
                 const deltaY = (clientY - lastClientY) * SWIPE_MULTIPLIER;
 
                 let targetX = panX + deltaX;
                 let targetY = panY + deltaY;
 
-                // Lưu lại vận tốc hiện tại để tạo hiệu ứng quán tính (momentum)
+                // Thuật toán trung bình hóa vận tốc (Moving Average Velocity)
                 const now = Date.now();
                 const dt = now - lastMoveTime;
-                if (dt > 0) {
-                    velocityX = deltaX / dt;
-                    velocityY = deltaY / dt;
+                if (dt > 0 && dt < 100) { // Bỏ qua nếu khung hình bị lag quá lâu
+                    let instVelX = deltaX / dt;
+                    let instVelY = deltaY / dt;
+
+                    velocityHistory.push({ x: instVelX, y: instVelY });
+                    if (velocityHistory.length > 5) velocityHistory.shift(); // Chỉ lấy 5 mẫu gần nhất
+
+                    // Tính trung bình
+                    velocityX = velocityHistory.reduce((sum, v) => sum + v.x, 0) / velocityHistory.length;
+                    velocityY = velocityHistory.reduce((sum, v) => sum + v.y, 0) / velocityHistory.length;
                 }
 
                 lastClientX = clientX;
@@ -541,19 +594,26 @@
                 isDragging = false;
                 panContainer.classList.remove('is-dragging');
 
-                // Thực thi Quán Tính (Momentum) nếu vừa có lực vuốt mạnh
+                // Check nếu ngừng di chuyển ngón tay rồi mới nhả ra (>50ms không có frame kéo nào) 
+                // thì cắt bỏ gia tốc để tránh việc ảnh tự trượt trong khi mình đang muốn nó đứng yen.
+                if (Date.now() - lastMoveTime > 50) {
+                    velocityX = 0;
+                    velocityY = 0;
+                }
+
+                // Thực thi Quán Tính (Momentum) mượt mà cao cấp
                 if (hasDragged && (Math.abs(velocityX) > 0.05 || Math.abs(velocityY) > 0.05)) {
-                    // Dùng CSS Transition để trôi thêm nhờ vận tốc vừa lưu (ví dụ trôi thêm tiếp ~300ms)
-                    let targetX = panX + (velocityX * 300);
-                    let targetY = panY + (velocityY * 300);
+                    // Gia tốc tăng vọt lên 800ms để kết hợp hoàn hảo cùng file CSS gốc (cubic-bezier 1.2s)
+                    // CSS sẽ đảm nhiệm làm đường cong giảm tốc y hệt như bánh xe ma sát mặt băng
+                    let targetX = panX + (velocityX * 800);
+                    let targetY = panY + (velocityY * 800);
 
                     const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
                     const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
 
-                    if (targetX > maxPosX) targetX = maxPosX;
-                    if (targetX < -maxPosX) targetX = -maxPosX;
-                    if (targetY > maxPosY) targetY = maxPosY;
-                    if (targetY < -maxPosY) targetY = -maxPosY;
+                    // Khóa neo bằng Math thay vì if/else cứng
+                    targetX = Math.max(-maxPosX, Math.min(maxPosX, targetX));
+                    targetY = Math.max(-maxPosY, Math.min(maxPosY, targetY));
 
                     panX = targetX;
                     panY = targetY;
