@@ -465,10 +465,18 @@
             let panX = 0;
             let panY = 0;
             let isDragging = false;
-            let startX = 0;
-            let startY = 0;
+            let lastClientX = 0;
+            let lastClientY = 0;
+            let dragStartX = 0;
+            let dragStartY = 0;
             let hasDragged = false; // Cờ theo dõi để không nhầm giữa Kéo và Click
             let lastTouchTime = 0; // Đánh dấu thời gian chạm cuối để tách biệt chuột
+
+            // Tham số cho tính năng trượt ngón tay trên điện thoại
+            const SWIPE_MULTIPLIER = 2.2; // Khuếch đại khoảng cách vuốt lên 2.2 lần
+            let velocityX = 0;
+            let velocityY = 0;
+            let lastMoveTime = 0;
 
             function startDrag(clientX, clientY) {
                 if (overlay.classList.contains('show')) return; // Khóa kéo khi đang hiện thông tin
@@ -476,41 +484,52 @@
                 hasDragged = false;
                 panContainer.classList.add('is-dragging');
 
-                startX = clientX - panX;
-                startY = clientY - panY;
+                lastClientX = clientX;
+                lastClientY = clientY;
+                dragStartX = clientX;
+                dragStartY = clientY;
+                lastMoveTime = Date.now();
+                velocityX = 0;
+                velocityY = 0;
             }
 
             function onDrag(clientX, clientY) {
                 if (!isDragging) return;
 
-                let targetX = clientX - startX;
-                let targetY = clientY - startY;
-
-                // Nếu di chuyển hơn 8px thì ghi nhận là Kéo, không phải Click
-                if (Math.abs(targetX - panX) > 8 || Math.abs(targetY - panY) > 8) {
+                // Ghi nhận hasDragged bằng tọa độ thực của tay
+                if (Math.abs(clientX - dragStartX) > 8 || Math.abs(clientY - dragStartY) > 8) {
                     hasDragged = true;
                 }
+
+                // Tính gia tốc (delta) với hệ số nhân để đỡ mỏi tay
+                const deltaX = (clientX - lastClientX) * SWIPE_MULTIPLIER;
+                const deltaY = (clientY - lastClientY) * SWIPE_MULTIPLIER;
+
+                let targetX = panX + deltaX;
+                let targetY = panY + deltaY;
+
+                // Lưu lại vận tốc hiện tại để tạo hiệu ứng quán tính (momentum)
+                const now = Date.now();
+                const dt = now - lastMoveTime;
+                if (dt > 0) {
+                    velocityX = deltaX / dt;
+                    velocityY = deltaY / dt;
+                }
+
+                lastClientX = clientX;
+                lastClientY = clientY;
+                lastMoveTime = now;
 
                 // Giới hạn max pan để mép ảnh không bao giờ bị lòi vào trong màn hình
                 const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
                 const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
 
                 // Thuật toán Clamp và Neo lại điểm kéo khi chạm viền (giống iOS)
-                if (targetX > maxPosX) {
-                    targetX = maxPosX;
-                    startX = clientX - maxPosX;
-                } else if (targetX < -maxPosX) {
-                    targetX = -maxPosX;
-                    startX = clientX + maxPosX;
-                }
+                if (targetX > maxPosX) { targetX = maxPosX; }
+                else if (targetX < -maxPosX) { targetX = -maxPosX; }
 
-                if (targetY > maxPosY) {
-                    targetY = maxPosY;
-                    startY = clientY - maxPosY;
-                } else if (targetY < -maxPosY) {
-                    targetY = -maxPosY;
-                    startY = clientY + maxPosY;
-                }
+                if (targetY > maxPosY) { targetY = maxPosY; }
+                else if (targetY < -maxPosY) { targetY = -maxPosY; }
 
                 panX = targetX;
                 panY = targetY;
@@ -521,6 +540,25 @@
             function endDrag() {
                 isDragging = false;
                 panContainer.classList.remove('is-dragging');
+
+                // Thực thi Quán Tính (Momentum) nếu vừa có lực vuốt mạnh
+                if (hasDragged && (Math.abs(velocityX) > 0.05 || Math.abs(velocityY) > 0.05)) {
+                    // Dùng CSS Transition để trôi thêm nhờ vận tốc vừa lưu (ví dụ trôi thêm tiếp ~300ms)
+                    let targetX = panX + (velocityX * 300);
+                    let targetY = panY + (velocityY * 300);
+
+                    const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
+                    const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
+
+                    if (targetX > maxPosX) targetX = maxPosX;
+                    if (targetX < -maxPosX) targetX = -maxPosX;
+                    if (targetY > maxPosY) targetY = maxPosY;
+                    if (targetY < -maxPosY) targetY = -maxPosY;
+
+                    panX = targetX;
+                    panY = targetY;
+                    updatePan();
+                }
             }
 
             function updatePan() {
