@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bé Cưng</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #111;
+            overflow: hidden;
+            /* Cấm mọi thao tác scroll */
+            font-family: 'Nunito', sans-serif;
+            touch-action: none;
+            /* Khóa thao tác browser mặc định để kéo vuốt cực mượt */
+        }
+
+        /* Lớp Container để thực hiện việc kéo vuốt (pan) không gian */
+        #pan-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: inline-block;
+            cursor: default;
+            transition: transform 1.2s cubic-bezier(0.15, 0.8, 0.15, 1);
+            /* Trượt siêu mượt */
+            will-change: transform;
+        }
+
+        #pan-container.is-dragging {
+            transition: none;
+            /* Tắt mượt mà khi đang kéo trực tiếp bằng tay */
+        }
+
+        /* Container bo gọn vừa vặn với kích thước ảnh thực tế trên màn hình, chịu trách nhiệm cho hiệu ứng ZOOM */
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+            transition: transform 0.7s cubic-bezier(0.85, 0, 0.15, 1);
+            will-change: transform;
+        }
+
+        .image-wrapper img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            /* Bỏ tính năng max-height/max-width chứa viền đen để thay thế bằng thuật toán Full Cover ở JS */
+        }
+
+        /* Hotspot Core Styles */
+        .hotspot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .hotspot-trigger {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Vùng bắt click mở rộng */
+        .hotspot-trigger::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .spot-marker {
+            width: 16px;
+            height: 16px;
+            background: #00e5ff;
+            border-radius: 50%;
+            box-shadow: 0 0 12px 6px rgba(0, 229, 255, 0.7);
+            position: relative;
+            z-index: 3;
+            transition: transform 0.3s ease, background 0.3s;
+            border: 2px solid #fff;
+            pointer-events: none;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: transparent;
+            border: 3px solid rgba(0, 229, 255, 0.9);
+            box-shadow: 0 0 15px 4px rgba(0, 229, 255, 0.5);
+            animation: slow-wave-pulse 1.5s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hotspot-trigger:hover .spot-marker {
+            transform: scale(1.4);
+            box-shadow: 0 0 20px 8px rgba(0, 229, 255, 0.9);
+            background: #fff;
+        }
+
+        @keyframes slow-wave-pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(5);
+                opacity: 0;
+            }
+        }
+
+        /* --- OVERLAY THÔNG TIN SẢN PHẨM --- */
+        .detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease 0.1s, visibility 0.5s ease 0.1s;
+        }
+
+        .detail-overlay.show {
+            opacity: 1;
+            visibility: visible;
+            /* Fade in nhanh hơn fade out một chút */
+            transition: opacity 0.4s ease 0s, visibility 0.4s ease 0s;
+        }
+
+        /* Hình nền mờ tạm thời dùng ảnh gốc, bạn thay sau */
+        .detail-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('store.jpeg') center/cover no-repeat;
+            filter: blur(20px) brightness(0.4);
+            transform: scale(1.1);
+            /* Dãn to ra để mép màn hình không bị lọt viền chưa blur */
+            z-index: 1;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            z-index: 4;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 800;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn:hover {
+            background: white;
+            color: #111;
+            transform: scale(1.05);
+        }
+
+        /* Bảng nội dung thông tin thiết kế nhẹ nhàng, tone hồng */
+        .detail-content {
+            position: relative;
+            z-index: 3;
+            background: #fffafa;
+            /* Sắc trắng pha chút hồng nhạt */
+            padding: 40px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 15px 40px rgba(255, 105, 180, 0.2), 0 5px 15px rgba(0, 0, 0, 0.08);
+            /* Bóng đổ hồng */
+            text-align: left;
+            border: 3px dashed #ffb6c1;
+            /* Viền nét đứt nhẹ nhàng */
+            transform: translateY(40px) scale(0.95);
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            background-image: radial-gradient(#ffe4e1 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+            /* Họa tiết chấm bi chìm */
+        }
+
+        .detail-overlay.show .detail-content {
+            transform: translateY(0) scale(1);
+            transition-delay: 0.2s;
+            /* Nảy nhẹ lên sau khi bg hiện ra */
+        }
+
+        .detail-content h2 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            color: #ff6699;
+            /* Tiêu đề màu hồng tươi tắn */
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+
+        .detail-content ul {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: #555;
+            margin: 0;
+            padding-left: 10px;
+            font-weight: 600;
+            list-style: none;
+            /* Bỏ chấm đen mặc định */
+        }
+
+        .detail-content ul li {
+            margin-bottom: 14px;
+            position: relative;
+            padding-left: 32px;
+        }
+
+        .detail-content ul li::before {
+            content: '🌸';
+            /* Chấm list bằng icon bông hoa */
+            position: absolute;
+            left: 0;
+            top: 2px;
+            font-size: 1.1rem;
+        }
+
+        /* --- FLOATING SOCIAL ICONS --- */
+        .floating-socials {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            z-index: 50;
+            /* Chỉ nổi trên pan container, nhưng dưới cái Overlay thông tin (z-index 100) */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+            /* Khối wrapper không cản trở việc thao tác kéo ảnh */
+        }
+
+        .floating-socials a {
+            pointer-events: auto;
+            /* Kích hoạt lại click cho các nút */
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.85);
+            color: #ff6699;
+            /* Màu hồng tone xuyệt tone lúc bình thường */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            font-size: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+        }
+
+        /* Hover bật ra màu truyền thống của từng mảng khối dịch vụ cho người dùng dễ nhận biết */
+        .floating-socials a:hover {
+            transform: scale(1.15) translateY(-3px);
+            color: white;
+            border-color: white;
+        }
+
+        .floating-socials a.btn-fb:hover {
+            background: #1877F2;
+            box-shadow: 0 10px 25px rgba(24, 119, 242, 0.4);
+            border-color: transparent;
+        }
+
+        .floating-socials a.btn-msg:hover {
+            background: #00B2FF;
+            box-shadow: 0 10px 25px rgba(0, 178, 255, 0.4);
+            border-color: transparent;
+        }
+
+        .floating-socials a.btn-phone:hover {
+            background: #00C853;
+            box-shadow: 0 10px 25px rgba(0, 200, 83, 0.4);
+            border-color: transparent;
+        }
+
+        .floating-socials a.btn-map:hover {
+            background: #F44336;
+            box-shadow: 0 10px 25px rgba(244, 67, 54, 0.4);
+            border-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .floating-socials {
+                bottom: 15px;
+                left: 15px;
+                gap: 12px;
+            }
+
+            .floating-socials a {
+                width: 42px;
+                height: 42px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Lớp Container chứa ảnh, phục vụ riêng cho việc Kéo/Vuốt (Pan) -->
+    <div id="pan-container">
+        <!-- Khối Wrapper ảnh sẽ đóng vai trò thực thể Zoom -->
+        <div class="image-wrapper" id="zoom-wrapper">
+            <img src="store.jpeg" alt="Background Store">
+
+            <!-- Các điểm đỏ được gán cứng theo % của tấm ảnh gốc -->
+            <!-- Object 1 đã được dịch chuyển lên 3 lần đường kính (3x40=120px) và qua phải 1.5 lần (1.5x40=60px) -->
+            <div class="hotspot" style="top: calc(67% - 120px); left: calc(4.5% + 60px);"
+                data-title="Các sản phẩm chăm sóc bé"
+                data-info="<ul><li>Si rô ho và các loại tinh dầu giữ ấm, giúp bé có giấc ngủ êm ái.</li><li>Kem dưỡng ẩm da dịu nhẹ, nâng niu làn da mỏng manh của con mỗi ngày.</li><li>Khăn ướt mềm mịn, thành phần tự nhiên và tiện lợi để mẹ dọn dẹp.</li></ul>">
+                <div class="hotspot-trigger">
+                    <div class="spot-marker"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+            </div>
+
+            <div class="hotspot" style="top: 48%; left: 20%;" data-title="Sữa bột"
+                data-info="<ul><li>Mang đến nguồn dinh dưỡng trọn vẹn, đồng hành cùng trẻ phát triển khỏe mạnh.</li><li>Thành phần mát lành, dễ tiêu hóa, hỗ trợ hệ miễn dịch tự nhiên của bé.</li><li>Hương vị thơm ngon, quen thuộc giúp bé luôn vui vẻ trong mỗi cữ sữa.</li></ul>">
+                <div class="hotspot-trigger">
+                    <div class="spot-marker"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+            </div>
+
+            <div class="hotspot" style="top: 15%; left: 27%;" data-title="Tã bỉm"
+                data-info="<ul><li>Bề mặt tã bông mềm mại, thấm hút tốt để bé yêu luôn cảm thấy khô thoáng.</li><li>Thiết kế linh hoạt, ôm trọn mọi cử động đáng yêu giúp bé vui chơi dễ dàng.</li><li>Màng đáy thoáng khí mỏng nhẹ nâng niu làn da, tránh cảm giác hầm bí.</li></ul>">
+                <div class="hotspot-trigger">
+                    <div class="spot-marker"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+            </div>
+
+            <div class="hotspot" style="top: 85%; left: 33%;" data-title="Đồ ăn dặm"
+                data-info="<ul><li>Những chiếc bánh tan ngay trong miệng, bổ sung năng lượng cho bé tập nhai.</li><li>Đa dạng hương vị tự nhiên từ ngũ cốc và trái cây, kích thích vị giác của trẻ.</li><li>Hỗ trợ bé làm quen với các thức ăn mới một cách tự nhiên và đầy hào hứng.</li></ul>">
+                <div class="hotspot-trigger">
+                    <div class="spot-marker"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+            </div>
+
+            <div class="hotspot" style="top: 48%; left: 42%;" data-title="Combo đi sinh"
+                data-info="<ul><li>Chuẩn bị sẵn sàng mọi vật dụng thiết yếu nhất cho mẹ và bé trong những ngày đầu.</li><li>Giúp mẹ tiết kiệm thời gian sửa soạn để hoàn toàn an tâm chờ đón con yêu bình an.</li><li>Gói gọn chăn ủ, áo sơ sinh, bao tay và những phụ kiện nhỏ xinh xắn.</li></ul>">
+                <div class="hotspot-trigger">
+                    <div class="spot-marker"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+            </div>
+
+            <div class="hotspot" style="top: 38%; left: 78%;" data-title="Set áo quần"
+                data-info="<ul><li>Chất liệu 100% cotton tự nhiên, thoáng mát và vô cùng thân thiện với làn da non nớt.</li><li>Bộ sưu tập với những sắc màu đáng yêu, rộng rãi để bé thoải mái trườn, bò.</li><li>Đường may cẩn thận, không gợn chỉ cọ xát gây khó chịu vào làn da bé xíu.</li></ul>">
+                <div class="hotspot-trigger">
+                    <div class="spot-marker"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container Overlay Bọc Lên Mọi Thứ Khi Đã Zoom -->
+    <div id="detail-overlay" class="detail-overlay">
+        <div class="detail-bg" id="detail-bg"></div>
+        <button class="close-btn" id="close-btn"><i class="fa-solid fa-arrow-left"></i> Trở về Cửa Hàng</button>
+        <div class="detail-content">
+            <h2 id="detail-title">Tên Object</h2>
+            <p id="detail-info">Thông tin chi tiết về sản phẩm này sẽ được hiển thị ở đây...</p>
+        </div>
+    </div>
+
+    <!-- Nút Mạng Xã Hội Trôi Nổi (Floating) -->
+    <div class="floating-socials">
+        <a href="#" class="btn-fb" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" class="btn-msg" title="Messenger"><i class="fa-brands fa-facebook-messenger"></i></a>
+        <a href="#" class="btn-phone" title="Gọi Điện"><i class="fa-solid fa-phone"></i></a>
+        <a href="#" class="btn-map" title="Bản Đồ"><i class="fa-solid fa-map-location-dot"></i></a>
+    </div>
+
+    <!-- Script điều khiển Zoom cực mượt (Cinematic Effect) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hotspots = document.querySelectorAll('.hotspot');
+            const wrapper = document.getElementById('zoom-wrapper');
+            const img = wrapper.querySelector('img');
+            const overlay = document.getElementById('detail-overlay');
+            const closeBtn = document.getElementById('close-btn');
+            const detailTitle = document.getElementById('detail-title');
+            const detailInfo = document.getElementById('detail-info');
+
+            // --- THUẬT TOÁN XÓA VIỀN ĐEN ---
+            // Fix cứng không gian Wrapper tự động phình to như "object-fit: cover" nhưng không phá vỡ tọa độ %
+            function resizeCover() {
+                if (!img.naturalWidth) return;
+                const aspect = img.naturalWidth / img.naturalHeight;
+                const winAspect = window.innerWidth / window.innerHeight;
+
+                // Nếu ảnh DÀI hơn khung hình -> Dóng vừa y Chiều Cao, nới rộng Chiều Ngang rớt lề mượt mà
+                if (aspect > winAspect) {
+                    wrapper.style.width = Math.ceil(window.innerHeight * aspect) + 'px';
+                    wrapper.style.height = window.innerHeight + 'px';
+                }
+                // Nếu ảnh CAO hơn khung hình -> Dóng vừa y Chiều Ngang, nới rộng Chiều Cao rớt lề mượt mà
+                else {
+                    wrapper.style.width = window.innerWidth + 'px';
+                    wrapper.style.height = Math.ceil(window.innerWidth / aspect) + 'px';
+                }
+
+                // Cập nhật lại giới hạn drag panX, panY sau khi màn hình bị resize
+                if (typeof updatePan === 'function') {
+                    const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
+                    const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
+                    if (panX > maxPosX) panX = maxPosX;
+                    if (panX < -maxPosX) panX = -maxPosX;
+                    if (panY > maxPosY) panY = maxPosY;
+                    if (panY < -maxPosY) panY = -maxPosY;
+                    updatePan();
+                }
+            }
+
+            // --- LOGIC KÉO VUỐT & CHẠY THEO CHUỘT ---
+            const panContainer = document.getElementById('pan-container');
+            let panX = 0;
+            let panY = 0;
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let hasDragged = false; // Cờ theo dõi để không nhầm giữa Kéo và Click
+            let lastTouchTime = 0; // Đánh dấu thời gian chạm cuối để tách biệt chuột
+
+            function startDrag(clientX, clientY) {
+                if (overlay.classList.contains('show')) return; // Khóa kéo khi đang hiện thông tin
+                isDragging = true;
+                hasDragged = false;
+                panContainer.classList.add('is-dragging');
+
+                startX = clientX - panX;
+                startY = clientY - panY;
+            }
+
+            function onDrag(clientX, clientY) {
+                if (!isDragging) return;
+
+                let targetX = clientX - startX;
+                let targetY = clientY - startY;
+
+                // Nếu di chuyển hơn 8px thì ghi nhận là Kéo, không phải Click
+                if (Math.abs(targetX - panX) > 8 || Math.abs(targetY - panY) > 8) {
+                    hasDragged = true;
+                }
+
+                // Giới hạn max pan để mép ảnh không bao giờ bị lòi vào trong màn hình
+                const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
+                const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
+
+                // Thuật toán Clamp và Neo lại điểm kéo khi chạm viền (giống iOS)
+                if (targetX > maxPosX) {
+                    targetX = maxPosX;
+                    startX = clientX - maxPosX;
+                } else if (targetX < -maxPosX) {
+                    targetX = -maxPosX;
+                    startX = clientX + maxPosX;
+                }
+
+                if (targetY > maxPosY) {
+                    targetY = maxPosY;
+                    startY = clientY - maxPosY;
+                } else if (targetY < -maxPosY) {
+                    targetY = -maxPosY;
+                    startY = clientY + maxPosY;
+                }
+
+                panX = targetX;
+                panY = targetY;
+
+                updatePan();
+            }
+
+            function endDrag() {
+                isDragging = false;
+                panContainer.classList.remove('is-dragging');
+            }
+
+            function updatePan() {
+                panContainer.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px))`;
+            }
+
+            // Đăng ký Event Chuột (Desktop) - Parallax Cinematic quay theo chuột
+            window.addEventListener('mousemove', (e) => {
+                // Khóa khi đang mở overlay hoặc khi vừa chạm tay vào cảm ứng (khoảng 1 giây)
+                if (overlay.classList.contains('show') || Date.now() - lastTouchTime < 1000) return;
+
+                // Tính toán max drag
+                const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
+                const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
+
+                // Lấy tọa độ chuột chuyển thể thành dải từ -1 -> 1 (-1 là rìa trái/trên, 1 là rìa phải/dưới)
+                const percentX = (e.clientX / window.innerWidth) * 2 - 1;
+                const percentY = (e.clientY / window.innerHeight) * 2 - 1;
+
+                // Nghịch đảo và nhân với maxPos để thiết lập tọa độ đích
+                panX = -percentX * maxPosX;
+                panY = -percentY * maxPosY;
+
+                updatePan();
+            });
+
+            // Đăng ký Event Touch (Mobile)
+            panContainer.addEventListener('touchstart', (e) => {
+                lastTouchTime = Date.now();
+                startDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+            window.addEventListener('touchmove', (e) => {
+                lastTouchTime = Date.now();
+                if (isDragging) {
+                    // Chống cuộn dọc mặc định của trình duyệt điện thoại khi đang vuốt ngang ảnh
+                    if (e.cancelable) e.preventDefault();
+                }
+                onDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+            window.addEventListener('touchend', (e) => {
+                lastTouchTime = Date.now();
+                endDrag();
+            });
+
+
+            // Gắn sự kiện khi kéo màn hình để resize liên tục
+            window.addEventListener('resize', resizeCover);
+            if (img.complete) {
+                resizeCover();
+            } else {
+                img.addEventListener('load', resizeCover);
+            }
+
+            // Hiệu ứng "Giả Siêu Zoom" bằng CSS Transform Origin tự động
+            hotspots.forEach(spot => {
+                const trigger = spot.querySelector('.hotspot-trigger');
+
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Cực kỳ quan trọng: Nếu người dùng vừa thực hiện hành động Kéo ảnh thì không kích hoạt Click
+                    if (hasDragged) return;
+
+                    // Lấy vị trí tâm của object theo tỷ lệ % đã thiết lập ở style của thẻ div đó
+                    const xPercent = spot.style.left;
+                    const yPercent = spot.style.top;
+
+                    // Gán tâm zoom vào ngay điểm mà chúng ta vừa Click
+                    wrapper.style.transformOrigin = `${xPercent} ${yPercent}`;
+
+                    // Hiệu ứng lao cực mạnh phóng to 5 lần (500%)
+                    wrapper.style.transform = "scale(5)";
+
+                    // Thay đổi nội dung hiển thị theo dữ liệu được nhét ở HTML Attributes
+                    detailTitle.innerText = spot.getAttribute('data-title');
+                    detailInfo.innerHTML = spot.getAttribute('data-info'); // Dùng innerHTML để hỗ trợ thẻ HTML (List)
+
+                    // Mở Overlay với một khoảng trễ cực nhỏ (150ms) để mắt người kịp thấy tấm ảnh "lao" vào mình rồi mới đổi cảnh
+                    setTimeout(() => {
+                        overlay.classList.add('show');
+                    }, 150);
+                });
+            });
+
+            // Logic Quay Về Màn Hình Chính
+            closeBtn.addEventListener('click', () => {
+                // Tắt Overlay từ từ
+                overlay.classList.remove('show');
+
+                // Đợi Overlay mờ đi gần hết rồi mới giật tấm ảnh thu nhỏ trở về góc nhìn toàn thể
+                setTimeout(() => {
+                    wrapper.style.transform = "scale(1)";
+                }, 200);
+            });
+        });
+    </script>
+</body>
+
+</html>
