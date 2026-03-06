@@ -13,13 +13,11 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #111;
+            background-color: #FDFBF7;
+            /* Off-white pastel background */
             overflow: hidden;
-            /* Cấm mọi thao tác scroll */
             font-family: 'Nunito', sans-serif;
             touch-action: none;
-            /* Khóa thao tác browser mặc định để kéo vuốt cực mượt */
-            /* CẤP ĐỘ CHUYÊN GIA UI/UX: Chặn triệt để bôi đen và menu lưu ảnh trên Mobile Safari/Chrome */
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -27,29 +25,29 @@
             user-select: none;
         }
 
-        /* Lớp Container để thực hiện việc kéo vuốt (pan) không gian */
         #pan-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             display: inline-block;
-            cursor: default;
+            cursor: grab;
             transition: transform 1.2s cubic-bezier(0.15, 0.8, 0.15, 1);
-            /* Trượt siêu mượt */
             will-change: transform;
+        }
+
+        #pan-container:active {
+            cursor: grabbing;
         }
 
         #pan-container.is-dragging {
             transition: none;
-            /* Tắt mượt mà khi đang kéo trực tiếp bằng tay */
         }
 
-        /* Container bo gọn vừa vặn với kích thước ảnh thực tế trên màn hình, chịu trách nhiệm cho hiệu ứng ZOOM */
         .image-wrapper {
             position: relative;
             display: inline-block;
-            transition: transform 0.7s cubic-bezier(0.85, 0, 0.15, 1);
+            transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
             will-change: transform;
         }
 
@@ -57,9 +55,33 @@
             display: block;
             width: 100%;
             height: 100%;
-            /* Ngăn chặn hành vi Giữ-Ngón-Tay hiển thị Context Menu Save Image của điện thoại */
             pointer-events: none;
             -webkit-user-drag: none;
+        }
+
+        /* --- LOGO STORE NỔI TRÊN ẢNH --- */
+        .store-logo {
+            position: absolute;
+            top: 6%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FFD700;
+            /* Vàng óng */
+            font-size: 5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            /* Soft chunky 3D Text (Claymorphism) */
+            text-shadow:
+                4px 4px 0px #FF8F00,
+                /* Cam cháy tạo khối 3D */
+                6px 6px 15px rgba(255, 143, 0, 0.6);
+            /* Đổ bóng phát sáng */
+            letter-spacing: 8px;
+            z-index: 5;
+            pointer-events: none;
+            width: 100%;
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
         }
 
         /* Hotspot Core Styles */
@@ -70,8 +92,8 @@
         }
 
         .hotspot-trigger {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -80,29 +102,34 @@
             z-index: 2;
         }
 
-        /* Vùng bắt click mở rộng */
         .hotspot-trigger::after {
             content: '';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             z-index: 10;
         }
 
         .spot-marker {
-            width: 16px;
-            height: 16px;
-            background: #00e5ff;
+            width: 24px;
+            height: 24px;
+            background: #FF9ECD;
+            /* Pink button */
             border-radius: 50%;
-            box-shadow: 0 0 12px 6px rgba(0, 229, 255, 0.7);
+            border: 3px solid #FFD700;
+            /* Viền vàng óng */
+            box-shadow:
+                0 0 15px 5px rgba(255, 158, 205, 0.7),
+                /* Glowing hồng */
+                4px 4px 10px rgba(0, 0, 0, 0.15),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.6);
             position: relative;
             z-index: 3;
-            transition: transform 0.3s ease, background 0.3s;
-            border: 2px solid #fff;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
         }
 
@@ -111,36 +138,90 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 16px;
-            height: 16px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: transparent;
-            border: 3px solid rgba(0, 229, 255, 0.9);
-            box-shadow: 0 0 15px 4px rgba(0, 229, 255, 0.5);
-            animation: slow-wave-pulse 1.5s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 1;
             pointer-events: none;
         }
 
+        /* 4 làn sóng nối đuôi nhau màu Vàng */
+        .pulse-ring::before,
+        .pulse-ring::after,
+        .spot-marker::before,
+        .spot-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.5);
+            /* Quầng sáng vàng nhẹ cho dải sóng */
+            animation: slow-wave-pulse 4s infinite linear;
+            pointer-events: none;
+        }
+
+        /* Chia thời gian delay để 4 vòng nối đều nhau (1 loop dài 4s) */
+        .pulse-ring::before {
+            animation-delay: 0s;
+        }
+
+        .pulse-ring::after {
+            animation-delay: 1s;
+        }
+
+        .spot-marker::before {
+            animation-delay: 2s;
+            z-index: -1;
+        }
+
+        .spot-marker::after {
+            animation-delay: 3s;
+            z-index: -1;
+        }
+
         .hotspot-trigger:hover .spot-marker {
-            transform: scale(1.4);
-            box-shadow: 0 0 20px 8px rgba(0, 229, 255, 0.9);
-            background: #fff;
+            background: #FF85A1;
+            border-color: #FF8F00;
+            /* Đã gỡ bỏ hiệu ứng Transform Scale (không phóng to / beat) nữa */
+            box-shadow:
+                0 0 25px 8px rgba(255, 133, 161, 0.9),
+                6px 6px 15px rgba(255, 158, 205, 0.3),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.9);
         }
 
         @keyframes slow-wave-pulse {
             0% {
-                transform: translate(-50%, -50%) scale(1);
+                width: 24px;
+                height: 24px;
                 opacity: 1;
+                border-width: 3px;
             }
 
             100% {
-                transform: translate(-50%, -50%) scale(5);
+                width: 100px;
+                height: 100px;
                 opacity: 0;
+                border-width: 0px;
             }
         }
 
-        /* --- OVERLAY THÔNG TIN SẢN PHẨM --- */
+        /* --- DEFAULT BACKGROUND FOR BLUR --- */
+        .detail-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Sử dụng glassmorphism backdrop trực tiếp thay vì duplicate ảnh */
+            background: rgba(253, 251, 247, 0.6);
+            backdrop-filter: blur(25px) saturate(150%);
+            -webkit-backdrop-filter: blur(25px) saturate(150%);
+            z-index: 1;
+        }
+
         .detail-overlay {
             position: fixed;
             top: 0;
@@ -150,7 +231,6 @@
             z-index: 100;
             display: flex;
             flex-direction: column;
-            /* Xếp dọc bảng thông tin và nút trở về */
             justify-content: center;
             align-items: center;
             opacity: 0;
@@ -161,227 +241,209 @@
         .detail-overlay.show {
             opacity: 1;
             visibility: visible;
-            /* Fade in nhanh hơn fade out một chút */
             transition: opacity 0.4s ease 0s, visibility 0.4s ease 0s;
         }
 
-        /* Hình nền mờ tạm thời dùng ảnh gốc, bạn thay sau */
-        .detail-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('store.jpeg') center/cover no-repeat;
-            filter: blur(20px) brightness(0.4);
-            transform: scale(1.1);
-            /* Dãn to ra để mép màn hình không bị lọt viền chưa blur */
-            z-index: 1;
-        }
-
-        /* --- LOGO STORE NỔI TRÊN ẢNH --- */
-        .store-logo {
-            position: absolute;
-            top: 6%;
-            /* Canh vị trí hàng đèn ở trên cùng */
-            left: 50%;
-            transform: translateX(-50%);
-            color: #FFD700;
-            /* Vàng óng */
-            font-size: 4.5rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 215, 0, 0.7);
-            /* Đổ bóng nổi bật */
-            letter-spacing: 5px;
-            z-index: 5;
-            pointer-events: none;
-            /* Không cản trở việc vuốt kéo ảnh */
-            width: 100%;
-            text-align: center;
-            font-family: inherit;
-        }
-
-        .close-btn {
-            position: relative;
-            /* Gỡ bỏ position absolute để trôi xuống dưới bảng */
-            z-index: 4;
-            background: rgba(255, 102, 153, 0.9);
-            /* Tone hồng tương đồng bảng thông tin */
-            color: white;
-            border: 2px dashed rgba(255, 255, 255, 0.8);
-            padding: 14px 30px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 800;
-            font-family: inherit;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 25px;
-            /* Khoảng cách hở giữa bảng thông tin và nút đóng */
-            box-shadow: 0 10px 25px rgba(255, 102, 153, 0.4);
-            transform: translateY(20px);
-            opacity: 0;
-        }
-
-        /* Hiệu ứng nảy lên cho nút đóng đồng bộ với bảng thông tin */
-        .detail-overlay.show .close-btn {
-            transform: translateY(0);
-            opacity: 1;
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s, opacity 0.5s ease 0.3s;
-        }
-
-        .close-btn:hover {
-            background: #ff3377;
-            color: #ffffff;
-            transform: scale(1.05);
-            box-shadow: 0 15px 35px rgba(255, 51, 119, 0.5);
-        }
-
-        /* Bảng nội dung thông tin thiết kế nhẹ nhàng, tone hồng */
+        /* Claymorphism Panel */
         .detail-content {
             position: relative;
             z-index: 3;
-            background: #fffafa;
-            /* Sắc trắng pha chút hồng nhạt */
-            padding: 40px;
-            border-radius: 24px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 15px 40px rgba(255, 105, 180, 0.2), 0 5px 15px rgba(0, 0, 0, 0.08);
-            /* Bóng đổ hồng */
+            background: #FFFFFF;
+            padding: 45px 40px;
+            border-radius: 32px;
+            width: 85%;
+            max-width: 550px;
             text-align: left;
-            border: 3px dashed #ffb6c1;
-            /* Viền nét đứt nhẹ nhàng */
-            transform: translateY(40px) scale(0.95);
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            background-image: radial-gradient(#ffe4e1 1.5px, transparent 1.5px);
-            background-size: 20px 20px;
-            /* Họa tiết chấm bi chìm */
+            border: 4px solid #FFFFFF;
+            /* Clay Outer + Inner Drop Shadows */
+            box-shadow:
+                15px 15px 35px rgba(255, 158, 205, 0.15),
+                -10px -10px 20px rgba(255, 255, 255, 0.8),
+                inset 3px 3px 8px rgba(255, 255, 255, 0.9),
+                inset -4px -4px 10px rgba(255, 203, 203, 0.3);
+            transform: translateY(60px) scale(0.9);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background-image: radial-gradient(#FFCBCB 2px, transparent 2px);
+            background-size: 24px 24px;
+            background-position: -12px -12px;
         }
 
         .detail-overlay.show .detail-content {
             transform: translateY(0) scale(1);
-            transition-delay: 0.2s;
-            /* Nảy nhẹ lên sau khi bg hiện ra */
+            transition-delay: 0.15s;
         }
 
         .detail-content h2 {
-            font-weight: 800;
-            font-size: 2.2rem;
-            color: #ff6699;
-            /* Tiêu đề màu hồng tươi tắn */
-            margin: 0 0 20px 0;
+            font-weight: 900;
+            font-size: 2.4rem;
+            color: #FF85A1;
+            margin: 0 0 24px 0;
             text-align: center;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0px rgba(255, 203, 203, 0.5);
         }
 
         .detail-content ul {
-            font-size: 1.15rem;
-            line-height: 1.7;
-            color: #555;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #5D5D5D;
             margin: 0;
-            padding-left: 10px;
-            font-weight: 600;
+            padding-left: 0;
+            font-weight: 700;
             list-style: none;
-            /* Bỏ chấm đen mặc định */
         }
 
         .detail-content ul li {
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             position: relative;
-            padding-left: 32px;
+            padding-left: 38px;
+            background: rgba(255, 255, 255, 0.6);
+            padding-top: 12px;
+            padding-bottom: 12px;
+            padding-right: 15px;
+            border-radius: 16px;
+            box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 1), 2px 2px 6px rgba(0, 0, 0, 0.03);
+            border: 2px solid #FFF5F7;
         }
 
         .detail-content ul li::before {
-            content: '🌸';
-            /* Chấm list bằng icon bông hoa */
+            content: '☁️';
             position: absolute;
-            left: 0;
-            top: 2px;
-            font-size: 1.1rem;
+            left: 10px;
+            top: 12px;
+            font-size: 1.2rem;
         }
 
-        /* --- FLOATING SOCIAL ICONS --- */
+        /* Clay Close Button */
+        .close-btn {
+            position: relative;
+            z-index: 4;
+            background: #FF9ECD;
+            color: #000000;
+            border: 2px solid #000000;
+            padding: 16px 36px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 800;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+            box-shadow:
+                4px 4px 0px rgba(0, 0, 0, 1),
+                inset 2px 2px 5px rgba(255, 255, 255, 0.7);
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .detail-overlay.show .close-btn {
+            transform: translateY(0);
+            opacity: 1;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s, opacity 0.4s ease 0.25s;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.08) translateY(-4px);
+            background: #FF85A1;
+            box-shadow:
+                6px 6px 0px rgba(0, 0, 0, 1),
+                inset 2px 2px 5px rgba(255, 255, 255, 0.8);
+        }
+
+        /* --- FLOATING SOCIAL ICONS (CLAYMORPHISM) --- */
         .floating-socials {
             position: fixed;
-            bottom: 25px;
-            left: 25px;
+            bottom: 30px;
+            left: 30px;
             z-index: 50;
-            /* Chỉ nổi trên pan container, nhưng dưới cái Overlay thông tin (z-index 100) */
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 18px;
             pointer-events: none;
-            /* Khối wrapper không cản trở việc thao tác kéo ảnh */
         }
 
         .floating-socials a {
             pointer-events: auto;
-            /* Kích hoạt lại click cho các nút */
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.85);
-            color: #ff6699;
-            /* Màu hồng tone xuyệt tone lúc bình thường */
+            width: 56px;
+            height: 56px;
+            border-radius: 20px;
+            /* Squircle */
+            background: #FFFFFF;
+            color: #FF9ECD;
             display: flex;
             justify-content: center;
             align-items: center;
             text-decoration: none;
-            font-size: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid transparent;
+            font-size: 22px;
+            border: 3px solid #FFFFFF;
+            /* Bubbly Claymorphism Shadow */
+            box-shadow:
+                6px 6px 14px rgba(0, 0, 0, 0.06),
+                inset 3px 3px 6px rgba(255, 255, 255, 1),
+                inset -3px -3px 6px rgba(0, 0, 0, 0.03);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* Hover bật ra màu truyền thống của từng mảng khối dịch vụ cho người dùng dễ nhận biết */
         .floating-socials a:hover {
-            transform: scale(1.15) translateY(-3px);
+            transform: scale(1.15) translateY(-6px);
             color: white;
-            border-color: white;
+            border-color: #FFFFFF;
+            box-shadow:
+                8px 12px 20px rgba(0, 0, 0, 0.1),
+                inset 3px 3px 6px rgba(255, 255, 255, 0.5),
+                inset -3px -3px 6px rgba(0, 0, 0, 0.1);
         }
 
         .floating-socials a.btn-fb:hover {
             background: #1877F2;
-            box-shadow: 0 10px 25px rgba(24, 119, 242, 0.4);
-            border-color: transparent;
         }
 
         .floating-socials a.btn-msg:hover {
             background: #00B2FF;
-            box-shadow: 0 10px 25px rgba(0, 178, 255, 0.4);
-            border-color: transparent;
         }
 
         .floating-socials a.btn-phone:hover {
             background: #00C853;
-            box-shadow: 0 10px 25px rgba(0, 200, 83, 0.4);
-            border-color: transparent;
         }
 
         .floating-socials a.btn-map:hover {
-            background: #F44336;
-            box-shadow: 0 10px 25px rgba(244, 67, 54, 0.4);
-            border-color: transparent;
+            background: #FF5252;
         }
 
         @media (max-width: 768px) {
             .floating-socials {
-                bottom: 15px;
-                left: 15px;
-                gap: 12px;
+                bottom: 20px;
+                left: 20px;
+                gap: 14px;
             }
 
             .floating-socials a {
-                width: 42px;
-                height: 42px;
+                width: 48px;
+                height: 48px;
                 font-size: 18px;
+                border-radius: 16px;
+            }
+
+            .store-logo {
+                font-size: 3.5rem;
+                top: 8%;
+            }
+
+            .detail-content {
+                padding: 35px 25px;
+                width: 90%;
+            }
+
+            .detail-content h2 {
+                font-size: 1.8rem;
+            }
+
+            .detail-content ul li {
+                font-size: 1rem;
             }
         }
     </style>
@@ -393,15 +455,14 @@
     <div id="pan-container">
         <!-- Khối Wrapper ảnh sẽ đóng vai trò thực thể Zoom -->
         <div class="image-wrapper" id="zoom-wrapper">
-            <img src="store.jpeg" alt="Background Store">
+            <img src="shop.jpeg" alt="Background Store">
 
             <!-- Logo tiệm chèn trực tiếp vào giữa không gian thực của ảnh -->
             <div class="store-logo">Bé Cưng</div>
 
             <!-- Các điểm đỏ được gán cứng theo % của tấm ảnh gốc -->
-            <!-- Object 1 đã được dịch chuyển lên 3 lần đường kính (3x40=120px) và qua phải 1.5 lần (1.5x40=60px) -->
-            <div class="hotspot" style="top: calc(67% - 120px); left: calc(4.5% + 60px);"
-                data-title="Các sản phẩm chăm sóc bé"
+            <!-- Object 1: Kệ ngoài cùng bên trái (Sản phẩm chăm sóc bé) -->
+            <div class="hotspot" style="top: 56%; left: 11%;" data-title="Các sản phẩm chăm sóc"
                 data-info="<ul><li>Si rô ho và các loại tinh dầu giữ ấm, giúp bé có giấc ngủ êm ái.</li><li>Kem dưỡng ẩm da dịu nhẹ, nâng niu làn da mỏng manh của con mỗi ngày.</li><li>Khăn ướt mềm mịn, thành phần tự nhiên và tiện lợi để mẹ dọn dẹp.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
@@ -409,7 +470,8 @@
                 </div>
             </div>
 
-            <div class="hotspot" style="top: 48%; left: 20%;" data-title="Sữa bột"
+            <!-- Object 2: Giữa các lon sữa Aptamil (Sữa bột) -->
+            <div class="hotspot" style="top: calc(42% + 40px); left: calc(42% - 80px);" data-title="Sữa bột"
                 data-info="<ul><li>Mang đến nguồn dinh dưỡng trọn vẹn, đồng hành cùng trẻ phát triển khỏe mạnh.</li><li>Thành phần mát lành, dễ tiêu hóa, hỗ trợ hệ miễn dịch tự nhiên của bé.</li><li>Hương vị thơm ngon, quen thuộc giúp bé luôn vui vẻ trong mỗi cữ sữa.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
@@ -417,7 +479,8 @@
                 </div>
             </div>
 
-            <div class="hotspot" style="top: 15%; left: 27%;" data-title="Tã bỉm"
+            <!-- Object 3: Kệ đồ phía trên bên phải lon sữa (Tã bỉm) -->
+            <div class="hotspot" style="top: calc(13% + 160px); left: calc(54% + 180px);" data-title="Tã bỉm"
                 data-info="<ul><li>Bề mặt tã bông mềm mại, thấm hút tốt để bé yêu luôn cảm thấy khô thoáng.</li><li>Thiết kế linh hoạt, ôm trọn mọi cử động đáng yêu giúp bé vui chơi dễ dàng.</li><li>Màng đáy thoáng khí mỏng nhẹ nâng niu làn da, tránh cảm giác hầm bí.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
@@ -425,7 +488,8 @@
                 </div>
             </div>
 
-            <div class="hotspot" style="top: 85%; left: 33%;" data-title="Đồ ăn dặm"
+            <!-- Object 4: Kệ phía dưới (Đồ ăn dặm) -->
+            <div class="hotspot" style="top: 66%; left: 58%;" data-title="Đồ ăn dặm"
                 data-info="<ul><li>Những chiếc bánh tan ngay trong miệng, bổ sung năng lượng cho bé tập nhai.</li><li>Đa dạng hương vị tự nhiên từ ngũ cốc và trái cây, kích thích vị giác của trẻ.</li><li>Hỗ trợ bé làm quen với các thức ăn mới một cách tự nhiên và đầy hào hứng.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
@@ -433,15 +497,17 @@
                 </div>
             </div>
 
-            <div class="hotspot" style="top: 48%; left: 42%;" data-title="Combo đi sinh"
-                data-info="<ul><li>Chuẩn bị sẵn sàng mọi vật dụng thiết yếu nhất cho mẹ và bé trong những ngày đầu.</li><li>Giúp mẹ tiết kiệm thời gian sửa soạn để hoàn toàn an tâm chờ đón con yêu bình an.</li><li>Gói gọn chăn ủ, áo sơ sinh, bao tay và những phụ kiện nhỏ xinh xắn.</li></ul>">
+            <!-- Object 5: Kệ xoay vàng (Phụ kiện sơ sinh) -->
+            <div class="hotspot" style="top: 43%; left: calc(74% + 40px);" data-title="Phụ kiện sơ sinh"
+                data-info="<ul><li>Mũ thóp mềm mại, băng đô xinh xắn cho các thiên thần nhỏ.</li><li>Bảo vệ thóp và giữ ấm đầu cho trẻ sơ sinh một cách an toàn.</li><li>Nhiều màu sắc dễ thương, chất liệu an toàn, không pha nilon.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
                     <div class="pulse-ring"></div>
                 </div>
             </div>
 
-            <div class="hotspot" style="top: 38%; left: 78%;" data-title="Set áo quần"
+            <!-- Object 6: Kệ ngoài cùng sát mép phải (Set áo quần áo) -->
+            <div class="hotspot" style="top: 60%; left: 92%;" data-title="Set áo quần"
                 data-info="<ul><li>Chất liệu 100% cotton tự nhiên, thoáng mát và vô cùng thân thiện với làn da non nớt.</li><li>Bộ sưu tập với những sắc màu đáng yêu, rộng rãi để bé thoải mái trườn, bò.</li><li>Đường may cẩn thận, không gợn chỉ cọ xát gây khó chịu vào làn da bé xíu.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
@@ -482,19 +548,19 @@
             const detailTitle = document.getElementById('detail-title');
             const detailInfo = document.getElementById('detail-info');
 
-            // --- THUẬT TOÁN XÓA VIỀN ĐEN ---
-            // Fix cứng không gian Wrapper tự động phình to như "object-fit: cover" nhưng không phá vỡ tọa độ %
+            // --- THUẬT TOÁN XÓA VIỀN ĐEN & CHỈ CHO CUỘN NGANG ---
             function resizeCover() {
                 if (!img.naturalWidth) return;
                 const aspect = img.naturalWidth / img.naturalHeight;
                 const winAspect = window.innerWidth / window.innerHeight;
 
+                // Cập nhật lại cơ chế Fill Fullscreen: Dựa trên tỷ lệ (Aspect Ratio)
                 // Nếu ảnh DÀI hơn khung hình -> Dóng vừa y Chiều Cao, nới rộng Chiều Ngang rớt lề mượt mà
                 if (aspect > winAspect) {
-                    wrapper.style.width = Math.ceil(window.innerHeight * aspect) + 'px';
                     wrapper.style.height = window.innerHeight + 'px';
+                    wrapper.style.width = Math.ceil(window.innerHeight * aspect) + 'px';
                 }
-                // Nếu ảnh CAO hơn khung hình -> Dóng vừa y Chiều Ngang, nới rộng Chiều Cao rớt lề mượt mà
+                // Nếu ảnh CAO hơn khung hình -> Dóng vừa y Chiều Ngang, nới rộng Chiều Cao dư dội lên trên/dưới
                 else {
                     wrapper.style.width = window.innerWidth + 'px';
                     wrapper.style.height = Math.ceil(window.innerWidth / aspect) + 'px';
@@ -503,11 +569,12 @@
                 // Cập nhật lại giới hạn drag panX, panY sau khi màn hình bị resize
                 if (typeof updatePan === 'function') {
                     const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
-                    const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
                     if (panX > maxPosX) panX = maxPosX;
                     if (panX < -maxPosX) panX = -maxPosX;
-                    if (panY > maxPosY) panY = maxPosY;
-                    if (panY < -maxPosY) panY = -maxPosY;
+
+                    // Fix cứng Y bằng 0 để không bao giờ vuốt dọc. 
+                    // Khi dư chiều cao (trên Desktop), ảnh sẽ tự động bị crop đều vùng trên và vùng dưới (giữ nguyên tâm ảnh).
+                    panY = 0;
                     updatePan();
                 }
             }
@@ -536,9 +603,9 @@
             function startDrag(clientX, clientY) {
                 if (overlay.classList.contains('show')) return; // Khóa kéo khi đang hiện thông tin
 
-                // CƠ CHẾ BẢO VỆ UX CHUYÊN SÂU: Nếu ảnh đang trong đà trôi siêu tốc (0.5s từ lúc buông tay),
-                // các thao tác chạm vô ý sẽ bị vô hiệu hóa để không gây ra tình trạng giật cục đứng khựng lại.
-                if (Date.now() - glideStartTime < 500) {
+                // CƠ CHẾ BẢO VỆ UX: Chống chạm/kéo liên tục khi hành trình trôi (1.2s)
+                // chưa kết thúc ít nhất 70% (tức khoảng 840ms). Ngăn việc ảnh bị giật cục.
+                if (Date.now() - glideStartTime < 840) {
                     return;
                 }
 
@@ -598,8 +665,8 @@
                 if (targetX > maxPosX) { targetX = maxPosX; }
                 else if (targetX < -maxPosX) { targetX = -maxPosX; }
 
-                if (targetY > maxPosY) { targetY = maxPosY; }
-                else if (targetY < -maxPosY) { targetY = -maxPosY; }
+                // Khóa hệ trục Y, không cho vuốt dọc
+                targetY = 0;
 
                 panX = targetX;
                 panY = targetY;
@@ -626,11 +693,10 @@
                     let targetY = panY + (velocityY * 1800);
 
                     const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
-                    const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
 
                     // Khóa neo bằng Math thay vì if/else cứng
                     targetX = Math.max(-maxPosX, Math.min(maxPosX, targetX));
-                    targetY = Math.max(-maxPosY, Math.min(maxPosY, targetY));
+                    targetY = 0; // Fix cứng Y
 
                     panX = targetX;
                     panY = targetY;
@@ -645,25 +711,8 @@
                 panContainer.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px))`;
             }
 
-            // Đăng ký Event Chuột (Desktop) - Parallax Cinematic quay theo chuột
-            window.addEventListener('mousemove', (e) => {
-                // Khóa khi đang mở overlay hoặc khi vừa chạm tay vào cảm ứng (khoảng 1 giây)
-                if (overlay.classList.contains('show') || Date.now() - lastTouchTime < 1000) return;
-
-                // Tính toán max drag
-                const maxPosX = Math.max(0, (wrapper.offsetWidth - window.innerWidth) / 2);
-                const maxPosY = Math.max(0, (wrapper.offsetHeight - window.innerHeight) / 2);
-
-                // Lấy tọa độ chuột chuyển thể thành dải từ -1 -> 1 (-1 là rìa trái/trên, 1 là rìa phải/dưới)
-                const percentX = (e.clientX / window.innerWidth) * 2 - 1;
-                const percentY = (e.clientY / window.innerHeight) * 2 - 1;
-
-                // Nghịch đảo và nhân với maxPos để thiết lập tọa độ đích
-                panX = -percentX * maxPosX;
-                panY = -percentY * maxPosY;
-
-                updatePan();
-            });
+            // Ghi chú: Đã tắt hoàn toàn hệ thống bắt sự kiện Mousemove trên Desktop. 
+            // Không còn hiệu ứng Parallax Cinematic chạy theo chuột, biến ảnh thành một Poster tĩnh.
 
             // Đăng ký Event Touch (Mobile)
             panContainer.addEventListener('touchstart', (e) => {
@@ -701,24 +750,16 @@
                     // Cực kỳ quan trọng: Nếu người dùng vừa thực hiện hành động Kéo ảnh thì không kích hoạt Click
                     if (hasDragged) return;
 
-                    // Lấy vị trí tâm của object theo tỷ lệ % đã thiết lập ở style của thẻ div đó
-                    const xPercent = spot.style.left;
-                    const yPercent = spot.style.top;
-
-                    // Gán tâm zoom vào ngay điểm mà chúng ta vừa Click
-                    wrapper.style.transformOrigin = `${xPercent} ${yPercent}`;
-
-                    // Hiệu ứng lao cực mạnh phóng to 5 lần (500%)
-                    wrapper.style.transform = "scale(5)";
+                    // Đã loại bỏ logic Zoom (scale 5) để ảnh giữ nguyên kích thước tĩnh 100%
 
                     // Thay đổi nội dung hiển thị theo dữ liệu được nhét ở HTML Attributes
                     detailTitle.innerText = spot.getAttribute('data-title');
                     detailInfo.innerHTML = spot.getAttribute('data-info'); // Dùng innerHTML để hỗ trợ thẻ HTML (List)
 
-                    // Mở Overlay với một khoảng trễ cực nhỏ (150ms) để mắt người kịp thấy tấm ảnh "lao" vào mình rồi mới đổi cảnh
+                    // Hiển thị Overlay ngay lập tức với tốc độ nhẹ nhàng
                     setTimeout(() => {
                         overlay.classList.add('show');
-                    }, 150);
+                    }, 50);
                 });
             });
 
@@ -726,11 +767,7 @@
             closeBtn.addEventListener('click', () => {
                 // Tắt Overlay từ từ
                 overlay.classList.remove('show');
-
-                // Đợi Overlay mờ đi gần hết rồi mới giật tấm ảnh thu nhỏ trở về góc nhìn toàn thể
-                setTimeout(() => {
-                    wrapper.style.transform = "scale(1)";
-                }, 200);
+                // Tính năng zoom đã bị bỏ nên không cần phục hồi tỷ lệ (scale)
             });
         });
     </script>
