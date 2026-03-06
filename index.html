@@ -7,6 +7,12 @@
     <title>Bé Cưng</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
         body,
         html {
             margin: 0;
@@ -123,7 +129,7 @@
             width: 32px;
             height: 32px;
             background-color: transparent;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='4' flood-color='%23FFD700' flood-opacity='0.8'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FFD700' stroke='%23000' stroke-width='2.5' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='4' flood-color='%23FFD700' flood-opacity='0.8'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FFD700' stroke='%23000' stroke-width='3' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
             background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
@@ -161,8 +167,8 @@
             height: 28px;
             transform: translate(-50%, -50%) scale(1);
             border-radius: 50%;
-            border: 1.8px solid rgba(255, 215, 0, 0.6);
-            box-shadow: 0 0 6px 1px rgba(255, 215, 0, 0.3);
+            border: 2px solid rgba(255, 215, 0, 0.75);
+            box-shadow: 0 0 6px 2px rgba(255, 215, 0, 0.4);
             /* Quầng sáng vàng nhẹ cho dải sóng */
             animation: slow-wave-pulse 4s infinite linear;
             pointer-events: none;
@@ -192,13 +198,13 @@
             background-color: transparent;
             border: none;
             box-shadow: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='5' flood-color='%23FF85A1' flood-opacity='1'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FF85A1' stroke='%23000' stroke-width='2.5' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='5' flood-color='%23FF85A1' flood-opacity='1'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FF85A1' stroke='%23000' stroke-width='3' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
         }
 
         @keyframes slow-wave-pulse {
             0% {
                 transform: translate(-50%, -50%) scale(1);
-                opacity: 0.6;
+                opacity: 0.8;
             }
 
             100% {
@@ -472,7 +478,7 @@
             /* Lôi toàn bộ Object ra khỏi mặt phẳng ảnh để neo ghim vĩnh viễn lên mặt kính màn hình */
             .hotspot {
                 position: fixed !important;
-                z-index: 40;
+                z-index: 100 !important;
                 transform: none !important;
                 width: 48px !important;
                 height: 48px !important;
@@ -480,6 +486,7 @@
                 justify-content: center;
                 align-items: center;
                 margin: 0 !important;
+                pointer-events: auto !important;
             }
 
             /* Bố trí các vị trí Đối Xứng với thanh Social (Nằm bên Trái) */
@@ -765,6 +772,11 @@
                 isDragging = false;
                 panContainer.classList.remove('is-dragging');
 
+                // Cho phép nút bấm hoạt động ngay sau khi thả tay kết thúc cuộn
+                setTimeout(() => {
+                    hasDragged = false;
+                }, 50);
+
                 // Check nếu ngừng di chuyển ngón tay rồi mới nhả ra (>50ms không có frame kéo nào) 
                 // thì cắt bỏ gia tốc để tránh việc ảnh tự trượt trong khi mình đang muốn nó đứng yen.
                 if (Date.now() - lastMoveTime > 50) {
@@ -834,19 +846,6 @@
             }
             window.addEventListener('resize', updateMobileLayout);
             updateMobileLayout();
-
-            // Sửa lỗi "chỉ bấm được ở giữa", reset hasDragged nếu touch mới
-            document.addEventListener('touchstart', (e) => {
-                if (!isDragging) {
-                    hasDragged = false;
-                }
-            }, { passive: true, capture: true });
-
-            // Sửa lỗi "nháy đen" vô hiệu hóa tap click highlight của trình duyệt
-            document.querySelectorAll('a, button, .hotspot-trigger').forEach(el => {
-                el.style.webkitTapHighlightColor = 'transparent';
-                el.style.outline = 'none';
-            });
 
             // Đăng ký Event Touch (Mobile)
             panContainer.addEventListener('touchstart', (e) => {
