@@ -29,11 +29,14 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate3d(-50%, -50%, 0);
             display: inline-block;
             cursor: grab;
             transition: transform 1.2s cubic-bezier(0.15, 0.8, 0.15, 1);
             will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            perspective: 1000px;
         }
 
         #pan-container:active {
@@ -154,13 +157,16 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            transform: translate(-50%, -50%) scale(1);
             border-radius: 50%;
             border: 3px solid #FFD700;
             box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.5);
             /* Quầng sáng vàng nhẹ cho dải sóng */
             animation: slow-wave-pulse 4s infinite linear;
             pointer-events: none;
+            will-change: transform, opacity;
         }
 
         /* Chia thời gian delay để 4 vòng nối đều nhau (1 loop dài 4s) */
@@ -194,17 +200,13 @@
 
         @keyframes slow-wave-pulse {
             0% {
-                width: 24px;
-                height: 24px;
+                transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
-                border-width: 3px;
             }
 
             100% {
-                width: 100px;
-                height: 100px;
+                transform: translate(-50%, -50%) scale(4.5);
                 opacity: 0;
-                border-width: 0px;
             }
         }
 
@@ -452,31 +454,18 @@
                 left: auto;
                 right: 20px;
                 bottom: 20px;
-                flex-direction: column-reverse;
-                /* Đảo ngược để FB trên, Map dưới so khớp với lề đáy */
+                /* Bỏ column-reverse để FB nằm trên cùng, Map dưới cùng như cũ */
             }
 
             /* Thu nhỏ kích thước Nút bấm Object đi 15% (khoảng 20px) */
             .spot-marker,
-            .pulse-ring {
+            .pulse-ring,
+            .spot-marker::before,
+            .spot-marker::after,
+            .pulse-ring::before,
+            .pulse-ring::after {
                 width: 20px;
                 height: 20px;
-            }
-
-            @keyframes slow-wave-pulse {
-                0% {
-                    width: 20px;
-                    height: 20px;
-                    opacity: 1;
-                    border-width: 3px;
-                }
-
-                100% {
-                    width: 85px;
-                    height: 85px;
-                    opacity: 0;
-                    border-width: 0px;
-                }
             }
 
             /* Lôi toàn bộ Object ra khỏi mặt phẳng ảnh để neo ghim vĩnh viễn lên mặt kính màn hình */
@@ -790,11 +779,45 @@
             }
 
             function updatePan() {
-                panContainer.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px))`;
+                // translate3d để ép bật Hardware Acceleration trên mobile, tránh xé khung hình
+                panContainer.style.transform = `translate3d(calc(-50% + ${panX}px), calc(-50% + ${panY}px), 0)`;
             }
 
-            // Ghi chú: Đã tắt hoàn toàn hệ thống bắt sự kiện Mousemove trên Desktop. 
-            // Không còn hiệu ứng Parallax Cinematic chạy theo chuột, biến ảnh thành một Poster tĩnh.
+            // --- THUẬT TOÁN KHÓA PIN OBJECT LÊN MÀN HÌNH (RIÊNG MOBILE) ---
+            // Lôi Object ra khỏi #zoom-wrapper khi sang mobile để không bị move dính theo ảnh
+            function updateMobileLayout() {
+                const isMobile = window.innerWidth <= 768;
+                const floatTitles = ["Set áo quần", "Tã bỉm", "Combo đi sinh", "Đồ ăn dặm"];
+
+                floatTitles.forEach(title => {
+                    // Dùng querySelectorAll để đảm bảo quét đúng hotspot cần thiết
+                    const spots = document.querySelectorAll('.hotspot');
+                    spots.forEach(spot => {
+                        if (spot.getAttribute('data-title') === title) {
+                            if (isMobile) {
+                                if (spot.parentElement !== document.body) {
+                                    // Bứt ra khỏi không gian ảnh, gắn thẳng vào Body để float vô cực
+                                    if (!spot.dataset.dtop) spot.dataset.dtop = spot.style.top;
+                                    if (!spot.dataset.dleft) spot.dataset.dleft = spot.style.left;
+
+                                    spot.style.top = '';
+                                    spot.style.left = '';
+                                    document.body.appendChild(spot);
+                                }
+                            } else {
+                                if (spot.parentElement === document.body) {
+                                    // Cho lặn lại vào trong ảnh nền như bình thường
+                                    spot.style.top = spot.dataset.dtop;
+                                    spot.style.left = spot.dataset.dleft;
+                                    wrapper.appendChild(spot);
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+            window.addEventListener('resize', updateMobileLayout);
+            updateMobileLayout();
 
             // Đăng ký Event Touch (Mobile)
             panContainer.addEventListener('touchstart', (e) => {
