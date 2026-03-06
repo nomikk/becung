@@ -445,6 +445,88 @@
             .detail-content ul li {
                 font-size: 1rem;
             }
+
+            /* --- GIAO DIỆN CHUYÊN BIỆT CHO MOBILE --- */
+            /* Đưa cụm Social sang mép Phải màn hình */
+            .floating-socials {
+                left: auto;
+                right: 20px;
+                bottom: 20px;
+                flex-direction: column-reverse;
+                /* Đảo ngược để FB trên, Map dưới so khớp với lề đáy */
+            }
+
+            /* Thu nhỏ kích thước Nút bấm Object đi 15% (khoảng 20px) */
+            .spot-marker,
+            .pulse-ring {
+                width: 20px;
+                height: 20px;
+            }
+
+            @keyframes slow-wave-pulse {
+                0% {
+                    width: 20px;
+                    height: 20px;
+                    opacity: 1;
+                    border-width: 3px;
+                }
+
+                100% {
+                    width: 85px;
+                    height: 85px;
+                    opacity: 0;
+                    border-width: 0px;
+                }
+            }
+
+            /* Lôi toàn bộ Object ra khỏi mặt phẳng ảnh để neo ghim vĩnh viễn lên mặt kính màn hình */
+            .hotspot {
+                position: fixed !important;
+                z-index: 40;
+                /* Đảm bảo nằm trên ảnh nhưng dưới overlay info */
+            }
+
+            /* Bố trí các vị trí Đối Xứng với thanh Social (Nằm bên Trái) */
+            /* Vị trí neo tĩnh dựa trên viewport height (vh). Map nằm dưới cùng, FB trên cùng */
+
+            /* Đối xứng Phone -> Set áo quần */
+            .hotspot[data-title="Set áo quần"] {
+                left: 20px !important;
+                bottom: calc(20px + 48px + 14px) !important;
+                /* Đáy + 1 nút map + gap */
+                top: auto !important;
+            }
+
+            /* Đối xứng Messenger -> Tã bỉm */
+            .hotspot[data-title="Tã bỉm"] {
+                left: 20px !important;
+                bottom: calc(20px + (48px + 14px) * 2) !important;
+                /* Đáy + 2 nút + gap */
+                top: auto !important;
+            }
+
+            /* Đối xứng Facebook -> Combo đi sinh */
+            .hotspot[data-title="Combo đi sinh"],
+            .hotspot[data-title="Phụ kiện sơ sinh"] {
+                left: 20px !important;
+                bottom: calc(20px + (48px + 14px) * 3) !important;
+                /* Đáy + 3 nút + gap */
+                top: auto !important;
+            }
+
+            /* Đối xứng Map -> Đồ ăn dặm */
+            .hotspot[data-title="Đồ ăn dặm"] {
+                left: 20px !important;
+                bottom: 20px !important;
+                /* Tương ứng ngang Map dưới cùng */
+                top: auto !important;
+            }
+
+            /* Giữ nguyên các Object ở trên ảnh: Chăm sóc bé, Sữa bột (Do User yêu cầu: "các sp chăm sóc giữ nguyên vị trí", "sữa bột di chuyển qua vị trí.." tức là trên Desktop, còn Mobile user không liệt kê, ngầm hiểu có thể vẫn dính trên ảnh hoặc ẩn. Yêu cầu ghi rõ: "object các sản phẩm chăm sóc giữu nguyên vị trí." nên ta trả lại position absolute cho 2 thằng này) */
+            .hotspot[data-title="Các sản phẩm chăm sóc"],
+            .hotspot[data-title="Sữa bột"] {
+                position: absolute !important;
+            }
         }
     </style>
 </head>
@@ -470,8 +552,8 @@
                 </div>
             </div>
 
-            <!-- Object 2: Giữa các lon sữa Aptamil (Sữa bột) -->
-            <div class="hotspot" style="top: calc(42% + 40px); left: calc(42% - 80px);" data-title="Sữa bột"
+            <!-- Object 2: Di dời sang vị trí cũ của Phụ kiện sơ sinh (Sữa bột) -->
+            <div class="hotspot" style="top: 43%; left: calc(74% + 40px);" data-title="Sữa bột"
                 data-info="<ul><li>Mang đến nguồn dinh dưỡng trọn vẹn, đồng hành cùng trẻ phát triển khỏe mạnh.</li><li>Thành phần mát lành, dễ tiêu hóa, hỗ trợ hệ miễn dịch tự nhiên của bé.</li><li>Hương vị thơm ngon, quen thuộc giúp bé luôn vui vẻ trong mỗi cữ sữa.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
@@ -497,9 +579,9 @@
                 </div>
             </div>
 
-            <!-- Object 5: Kệ xoay vàng (Phụ kiện sơ sinh) -->
-            <div class="hotspot" style="top: 43%; left: calc(74% + 40px);" data-title="Phụ kiện sơ sinh"
-                data-info="<ul><li>Mũ thóp mềm mại, băng đô xinh xắn cho các thiên thần nhỏ.</li><li>Bảo vệ thóp và giữ ấm đầu cho trẻ sơ sinh một cách an toàn.</li><li>Nhiều màu sắc dễ thương, chất liệu an toàn, không pha nilon.</li></ul>">
+            <!-- Object 5: Kệ nhánh xuóng một chút (Combo đi sinh) -->
+            <div class="hotspot" style="top: calc(43% + 40px); left: calc(74% + 40px);" data-title="Combo đi sinh"
+                data-info="<ul><li>Chuẩn bị sẵn sàng mọi vật dụng thiết yếu nhất cho mẹ và bé trong những ngày đầu.</li><li>Giúp mẹ tiết kiệm thời gian sửa soạn, bao gồm chăn ủ, áo sơ sinh, bao tay và các phụ kiện tiện lợi tinh tế.</li><li>Hoàn toàn an tâm chờ đón con yêu bình an với combo đầy đủ trọn vẹn.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
                     <div class="pulse-ring"></div>
@@ -603,9 +685,9 @@
             function startDrag(clientX, clientY) {
                 if (overlay.classList.contains('show')) return; // Khóa kéo khi đang hiện thông tin
 
-                // CƠ CHẾ BẢO VỆ UX: Chống chạm/kéo liên tục khi hành trình trôi (1.2s)
-                // chưa kết thúc ít nhất 70% (tức khoảng 840ms). Ngăn việc ảnh bị giật cục.
-                if (Date.now() - glideStartTime < 840) {
+                // CƠ CHẾ BẢO VỆ UX (MOBILE GIẢM BẢO VỆ XUỐNG DƯỚI 30% CHẶNG ĐƯỜNG = 300ms)
+                const protectionTime = window.innerWidth <= 768 ? 300 : 840;
+                if (Date.now() - glideStartTime < protectionTime) {
                     return;
                 }
 
