@@ -121,19 +121,15 @@
         }
 
         .spot-marker {
-            width: 32px;
-            height: 32px;
-            background-color: transparent;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='4' flood-color='%23FFD700' flood-opacity='0.8'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FFD700' stroke='%23000' stroke-width='3' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
-            background-size: 100% 100%;
-            background-position: center;
-            background-repeat: no-repeat;
+            width: 16px;
+            height: 16px;
+            background: #00e5ff;
             border-radius: 50%;
-            border: none;
-            box-shadow: none;
+            box-shadow: 0 0 12px 6px rgba(0, 229, 255, 0.7);
             position: relative;
             z-index: 3;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s, border-color 0.3s, box-shadow 0.3s;
+            border: 2px solid #fff;
             pointer-events: none;
         }
 
@@ -142,68 +138,32 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 28px;
-            height: 28px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
+            background: transparent;
+            border: 3px solid rgba(0, 229, 255, 0.9);
+            box-shadow: 0 0 15px 4px rgba(0, 229, 255, 0.5);
+            animation: slow-wave-pulse 1.5s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
             z-index: 1;
             pointer-events: none;
         }
 
-        /* 4 làn sóng nối đuôi nhau màu Vàng */
-        .pulse-ring::before,
-        .pulse-ring::after,
-        .spot-marker::before,
-        .spot-marker::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 28px;
-            height: 28px;
-            transform: translate(-50%, -50%) scale(1);
-            border-radius: 50%;
-            border: 2px solid rgba(255, 215, 0, 0.75);
-            box-shadow: 0 0 6px 2px rgba(255, 215, 0, 0.4);
-            /* Quầng sáng vàng nhẹ cho dải sóng */
-            animation: slow-wave-pulse 4s infinite linear;
-            pointer-events: none;
-            will-change: transform, opacity;
-        }
-
-        /* Chia thời gian delay để 4 vòng nối đều nhau (1 loop dài 4s) */
-        .pulse-ring::before {
-            animation-delay: 0s;
-        }
-
-        .pulse-ring::after {
-            animation-delay: 1s;
-        }
-
-        .spot-marker::before {
-            animation-delay: 2s;
-            z-index: -1;
-        }
-
-        .spot-marker::after {
-            animation-delay: 3s;
-            z-index: -1;
-        }
-
         .hotspot-trigger:hover .spot-marker {
-            background-color: transparent;
-            border: none;
-            box-shadow: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='5' flood-color='%23FF85A1' flood-opacity='1'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FF85A1' stroke='%23000' stroke-width='3' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
+            transform: scale(1.3);
+            background: #fff;
+            box-shadow: 0 0 15px 5px rgba(0, 229, 255, 0.8);
+            border-color: #00e5ff;
         }
 
         @keyframes slow-wave-pulse {
             0% {
                 transform: translate(-50%, -50%) scale(1);
-                opacity: 0.8;
+                opacity: 1;
             }
 
             100% {
-                transform: translate(-50%, -50%) scale(4.5);
+                transform: translate(-50%, -50%) scale(4);
                 opacity: 0;
             }
         }
@@ -455,19 +415,11 @@
                 /* Bỏ column-reverse để FB nằm trên cùng, Map dưới cùng như cũ */
             }
 
-            /* Thu nhỏ kích thước Nút bấm Object đi 15% (%)*/
-            .spot-marker {
-                width: 28px;
-                height: 28px;
-            }
-
-            .pulse-ring,
-            .spot-marker::before,
-            .spot-marker::after,
-            .pulse-ring::before,
-            .pulse-ring::after {
-                width: 24px;
-                height: 24px;
+            /* Kích thước Nút bấm Object trên Mobile (chấm xanh) */
+            .spot-marker,
+            .pulse-ring {
+                width: 16px;
+                height: 16px;
             }
 
             /* Lôi toàn bộ Object ra khỏi mặt phẳng ảnh để neo ghim vĩnh viễn lên mặt kính màn hình */
