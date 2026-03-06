@@ -103,6 +103,8 @@
             cursor: pointer;
             position: relative;
             z-index: 2;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .hotspot-trigger::after {
@@ -118,18 +120,16 @@
         }
 
         .spot-marker {
-            width: 24px;
-            height: 24px;
-            background: #FF9ECD;
-            /* Pink button */
+            width: 32px;
+            height: 32px;
+            background-color: transparent;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='4' flood-color='%23FFD700' flood-opacity='0.8'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FFD700' stroke='%23000' stroke-width='2.5' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
             border-radius: 50%;
-            border: 3px solid #FFD700;
-            /* Viền vàng óng */
-            box-shadow:
-                0 0 15px 5px rgba(255, 158, 205, 0.7),
-                /* Glowing hồng */
-                4px 4px 10px rgba(0, 0, 0, 0.15),
-                inset 2px 2px 4px rgba(255, 255, 255, 0.6);
+            border: none;
+            box-shadow: none;
             position: relative;
             z-index: 3;
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -141,8 +141,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             z-index: 1;
             pointer-events: none;
@@ -157,12 +157,12 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             transform: translate(-50%, -50%) scale(1);
             border-radius: 50%;
-            border: 3px solid #FFD700;
-            box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.5);
+            border: 1.8px solid rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 6px 1px rgba(255, 215, 0, 0.3);
             /* Quầng sáng vàng nhẹ cho dải sóng */
             animation: slow-wave-pulse 4s infinite linear;
             pointer-events: none;
@@ -189,19 +189,16 @@
         }
 
         .hotspot-trigger:hover .spot-marker {
-            background: #FF85A1;
-            border-color: #FF8F00;
-            /* Đã gỡ bỏ hiệu ứng Transform Scale (không phóng to / beat) nữa */
-            box-shadow:
-                0 0 25px 8px rgba(255, 133, 161, 0.9),
-                6px 6px 15px rgba(255, 158, 205, 0.3),
-                inset 2px 2px 4px rgba(255, 255, 255, 0.9);
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cfilter id='shadow'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%23000' flood-opacity='0.6'/%3E%3CfeDropShadow dx='0' dy='0' stdDeviation='5' flood-color='%23FF85A1' flood-opacity='1'/%3E%3C/filter%3E%3Cpath filter='url(%23shadow)' fill='%23FF85A1' stroke='%23000' stroke-width='2.5' stroke-linejoin='round' d='M16 3 L19.4 10 L27 11.1 L21.5 16.5 L22.8 24 L16 20.4 L9.2 24 L10.5 16.5 L5 11.1 L12.6 10 Z'/%3E%3C/svg%3E");
         }
 
         @keyframes slow-wave-pulse {
             0% {
                 transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
+                opacity: 0.6;
             }
 
             100% {
@@ -457,32 +454,41 @@
                 /* Bỏ column-reverse để FB nằm trên cùng, Map dưới cùng như cũ */
             }
 
-            /* Thu nhỏ kích thước Nút bấm Object đi 15% (khoảng 20px) */
-            .spot-marker,
+            /* Thu nhỏ kích thước Nút bấm Object đi 15% (%)*/
+            .spot-marker {
+                width: 28px;
+                height: 28px;
+            }
+
             .pulse-ring,
             .spot-marker::before,
             .spot-marker::after,
             .pulse-ring::before,
             .pulse-ring::after {
-                width: 20px;
-                height: 20px;
+                width: 24px;
+                height: 24px;
             }
 
             /* Lôi toàn bộ Object ra khỏi mặt phẳng ảnh để neo ghim vĩnh viễn lên mặt kính màn hình */
             .hotspot {
                 position: fixed !important;
                 z-index: 40;
-                /* Đảm bảo nằm trên ảnh nhưng dưới overlay info */
+                transform: none !important;
+                width: 48px !important;
+                height: 48px !important;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0 !important;
             }
 
             /* Bố trí các vị trí Đối Xứng với thanh Social (Nằm bên Trái) */
-            /* Vị trí neo tĩnh dựa trên viewport height (vh). Map nằm dưới cùng, FB trên cùng */
+            /* Vị trí neo tĩnh dựa trên khoảng cách. Social đang có left/right=20px, kích cỡ 48x48. Map nằm dưới cùng, FB trên cùng */
 
             /* Đối xứng Phone -> Set áo quần */
             .hotspot[data-title="Set áo quần"] {
                 left: 20px !important;
                 bottom: calc(20px + 48px + 14px) !important;
-                /* Đáy + 1 nút map + gap */
                 top: auto !important;
             }
 
@@ -490,7 +496,6 @@
             .hotspot[data-title="Tã bỉm"] {
                 left: 20px !important;
                 bottom: calc(20px + (48px + 14px) * 2) !important;
-                /* Đáy + 2 nút + gap */
                 top: auto !important;
             }
 
@@ -499,7 +504,6 @@
             .hotspot[data-title="Phụ kiện sơ sinh"] {
                 left: 20px !important;
                 bottom: calc(20px + (48px + 14px) * 3) !important;
-                /* Đáy + 3 nút + gap */
                 top: auto !important;
             }
 
@@ -507,14 +511,26 @@
             .hotspot[data-title="Đồ ăn dặm"] {
                 left: 20px !important;
                 bottom: 20px !important;
-                /* Tương ứng ngang Map dưới cùng */
                 top: auto !important;
             }
 
-            /* Giữ nguyên các Object ở trên ảnh: Chăm sóc bé, Sữa bột (Do User yêu cầu: "các sp chăm sóc giữ nguyên vị trí", "sữa bột di chuyển qua vị trí.." tức là trên Desktop, còn Mobile user không liệt kê, ngầm hiểu có thể vẫn dính trên ảnh hoặc ẩn. Yêu cầu ghi rõ: "object các sản phẩm chăm sóc giữu nguyên vị trí." nên ta trả lại position absolute cho 2 thằng này) */
-            .hotspot[data-title="Các sản phẩm chăm sóc"],
+            /* Giữ nguyên các Object ở trên ảnh: Chăm sóc bé, Sữa bột chạy vị trí mới trên điện thoại */
+            .hotspot[data-title="Các sản phẩm chăm sóc"] {
+                position: absolute !important;
+                transform: translate(-50%, -50%) !important;
+                width: 0 !important;
+                height: 0 !important;
+                display: block !important;
+            }
+
             .hotspot[data-title="Sữa bột"] {
                 position: absolute !important;
+                transform: translate(-50%, -50%) !important;
+                width: 0 !important;
+                height: 0 !important;
+                display: block !important;
+                top: 43% !important;
+                left: calc(74% + 40px) !important;
             }
         }
     </style>
@@ -541,8 +557,8 @@
                 </div>
             </div>
 
-            <!-- Object 2: Di dời sang vị trí cũ của Phụ kiện sơ sinh (Sữa bột) -->
-            <div class="hotspot" style="top: 43%; left: calc(74% + 40px);" data-title="Sữa bột"
+            <!-- Object 2: Giữa các lon sữa Aptamil (Sữa bột) -->
+            <div class="hotspot" style="top: calc(42% + 40px); left: calc(42% - 80px);" data-title="Sữa bột"
                 data-info="<ul><li>Mang đến nguồn dinh dưỡng trọn vẹn, đồng hành cùng trẻ phát triển khỏe mạnh.</li><li>Thành phần mát lành, dễ tiêu hóa, hỗ trợ hệ miễn dịch tự nhiên của bé.</li><li>Hương vị thơm ngon, quen thuộc giúp bé luôn vui vẻ trong mỗi cữ sữa.</li></ul>">
                 <div class="hotspot-trigger">
                     <div class="spot-marker"></div>
@@ -818,6 +834,19 @@
             }
             window.addEventListener('resize', updateMobileLayout);
             updateMobileLayout();
+
+            // Sửa lỗi "chỉ bấm được ở giữa", reset hasDragged nếu touch mới
+            document.addEventListener('touchstart', (e) => {
+                if (!isDragging) {
+                    hasDragged = false;
+                }
+            }, { passive: true, capture: true });
+
+            // Sửa lỗi "nháy đen" vô hiệu hóa tap click highlight của trình duyệt
+            document.querySelectorAll('a, button, .hotspot-trigger').forEach(el => {
+                el.style.webkitTapHighlightColor = 'transparent';
+                el.style.outline = 'none';
+            });
 
             // Đăng ký Event Touch (Mobile)
             panContainer.addEventListener('touchstart', (e) => {
